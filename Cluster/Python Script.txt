@@ -1,0 +1,27 @@
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
+data = dataset.copy()
+
+# Drop 'Outcome' if present
+if 'Outcome' in data.columns:
+    features = data.drop(['Outcome'], axis=1)
+else:
+    features = data
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(features)
+
+kmeans = KMeans(n_clusters=3, random_state=0, n_init=10)
+data['Cluster'] = kmeans.fit_predict(X_scaled)
+
+# Scatter plot: choose two columns for x and y axis (example: 'Glucose', 'Age')
+plt.figure(figsize=(8,6))
+scatter = plt.scatter(data['Glucose'], data['Age'], c=data['Cluster'], cmap='viridis')
+plt.xlabel('Glucose')
+plt.ylabel('Age')
+plt.title('K-Means Clusters')
+plt.colorbar(scatter, label='Cluster')
+plt.show()

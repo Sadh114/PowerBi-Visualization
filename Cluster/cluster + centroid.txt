@@ -1,0 +1,52 @@
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+import numpy as np
+
+data = dataset.copy()
+
+# Drop 'Outcome' if present
+if 'Outcome' in data.columns:
+    features = data.drop(['Outcome'], axis=1)
+else:
+    features = data
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(features)
+
+kmeans = KMeans(n_clusters=3, random_state=0, n_init=10)
+data['Cluster'] = kmeans.fit_predict(X_scaled)
+
+plt.figure(figsize=(8,6))
+
+# Create colormap
+cmap = plt.cm.viridis
+norm = plt.Normalize(vmin=0, vmax=kmeans.n_clusters - 1)
+
+# Plot cluster points colored by cluster
+scatter = plt.scatter(data['Glucose'], data['BMI'], c=data['Cluster'], cmap=cmap, alpha=0.6)
+
+# Centroids in original scale
+centroids = kmeans.cluster_centers_
+centroids_orig = scaler.inverse_transform(centroids)
+
+# Plot centroids, colored by cluster color
+for i, centroid in enumerate(centroids_orig):
+    plt.scatter(
+        centroid[features.columns.get_loc('Glucose')],
+        centroid[features.columns.get_loc('BMI')],
+        s=800,
+        color=cmap(norm(i)),
+        marker='o',
+        edgecolors='black',
+        linewidths=3,
+        label=f'Centroid {i}'
+    )
+
+plt.xlabel('Glucose')
+plt.ylabel('BMI')
+plt.title('K-Means Clusters (Glucose vs BMI) with Colored Centroids')
+plt.colorbar(scatter, label='Cluster')
+plt.legend()
+plt.show()
